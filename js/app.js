@@ -6,11 +6,25 @@ let selectedLocation = localStorage.getItem("nb_location") || "patna";
 
 // ─── INIT ────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
+  loadSavedData();   // merge admin-saved data (prices + images) into APP_DATA
   renderAll();
   initScrollAnimations();
   initStickyNav();
   initConstructionParticles();
 });
+
+// Merge admin's localStorage snapshot (nb_admin_data) into the in-memory APP_DATA.
+// This is the same blob the admin portal saves, so prices AND item.image URLs
+// are always in sync — on every browser, not just the admin's device.
+function loadSavedData() {
+  try {
+    const saved = localStorage.getItem("nb_admin_data");
+    if (!saved) return;
+    const parsed = JSON.parse(saved);
+    if (parsed.materials) APP_DATA.materials = parsed.materials;
+    if (parsed.services)  APP_DATA.services  = parsed.services;
+  } catch (e) { /* ignore corrupt data */ }
+}
 
 function renderAll() {
   renderLocationDropdown();
@@ -159,10 +173,11 @@ function renderMaterials(catId) {
       </div>`;
     }).join("");
 
-    // ── Carousel: per-item images from localStorage (uploaded via admin) ──
-    const itemImgs = supplier.items.map((item, ii) => {
-      const src = localStorage.getItem(`nb_img_${catId}_${supplier.id}_${ii}`);
-      return src ? { src, caption: currentLang === "hi" ? item.grade : item.gradeEn } : null;
+    // ── Carousel: per-item images stored on item.image (uploaded via admin) ──
+    const itemImgs = supplier.items.map(item => {
+      return item.image
+        ? { src: item.image, caption: currentLang === "hi" ? item.grade : item.gradeEn }
+        : null;
     }).filter(Boolean);
 
     const carId = `cr-${catId}-${idx}`;

@@ -205,11 +205,10 @@ function showToast() {
 }
 
 // ── IMAGE STORAGE HELPERS ─────────────────────────────────
-function imgKey(cat, supplierId, ii) {
-  return `nb_img_${cat}_${supplierId}_${ii}`;
-}
-function getStoredImg(cat, supplierId, ii) {
-  return localStorage.getItem(imgKey(cat, supplierId, ii)) || "";
+// Images are stored on item.image inside APP_DATA and saved
+// as part of nb_admin_data — visible on ALL browsers.
+function getStoredImg(cat, si, ii) {
+  return APP_DATA.materials[cat]?.[si]?.items?.[ii]?.image || "";
 }
 
 // Upload image to ImgBB, save returned URL to localStorage
@@ -246,9 +245,9 @@ async function uploadItemImage(cat, si, ii, input) {
 
       if (json.success) {
         const url = json.data.display_url;   // permanent direct-link URL
-        localStorage.setItem(imgKey(cat, APP_DATA.materials[cat][si].id, ii), url);
+        APP_DATA.materials[cat][si].items[ii].image = url;  // store on item
+        saveAdminData();   // persists into nb_admin_data → syncs across browsers
         renderMaterialSection(cat);
-        showToast();
       } else {
         alert("Upload failed: " + (json.error?.message || "Unknown error from ImgBB"));
         renderMaterialSection(cat);
@@ -262,7 +261,8 @@ async function uploadItemImage(cat, si, ii, input) {
 }
 
 function removeItemImage(cat, si, ii) {
-  localStorage.removeItem(imgKey(cat, APP_DATA.materials[cat][si].id, ii));
+  delete APP_DATA.materials[cat][si].items[ii].image;
+  saveAdminData();
   renderMaterialSection(cat);
 }
 
