@@ -189,19 +189,47 @@ function loadAdminData() {
   }
 }
 
-function saveAdminData() {
-  localStorage.setItem("nb_admin_data", JSON.stringify({
+async function saveAdminData() {
+  const payload = {
     materials: APP_DATA.materials,
-    services: APP_DATA.services,
+    services:  APP_DATA.services,
     lastUpdated: new Date().toLocaleDateString("hi-IN")
-  }));
-  showToast();
+  };
+  // Always save locally first (instant)
+  localStorage.setItem("nb_admin_data", JSON.stringify(payload));
+
+  // Sync to JSONBin so ALL browsers/devices see the changes
+  const binId  = SITE_CONFIG.jsonbinId;
+  const binKey = SITE_CONFIG.jsonbinKey;
+  if (!binId || binId === "YOUR_BIN_ID_HERE") {
+    showToast("⚠️ JSONBin not configured — changes won't sync to other browsers");
+    return;
+  }
+  try {
+    showToast("⏳ Syncing…");
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+      method:  "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Master-Key": binKey
+      },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      showToast("✅ सफलतापूर्वक सेव और sync हुआ!");
+    } else {
+      showToast("⚠️ Local save OK — JSONBin sync failed (check key/id)");
+    }
+  } catch (e) {
+    showToast("⚠️ Local save OK — no internet for sync");
+  }
 }
 
-function showToast() {
+function showToast(msg) {
   const t = document.getElementById("toast");
+  t.textContent = msg || "✅ सफलतापूर्वक सेव हुआ!";
   t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 2500);
+  setTimeout(() => t.classList.remove("show"), 3000);
 }
 
 // ── IMAGE STORAGE HELPERS ─────────────────────────────────

@@ -38,4 +38,13 @@ const SITE_CONFIG = {
   // and visible to ALL visitors on ALL devices.
   imgbbApiKey: "59a95d9717d7f373f243564d996de66b",
 
+  // ── CROSS-BROWSER DATA SYNC (JSONBin) ─────────────────────
+  // Stores prices + image URLs so ALL browsers see admin changes.
+  // 1. Sign up free at https://jsonbin.io
+  // 2. Go to API Keys → copy your Master Key
+  // 3. Click "Create Bin" → paste {} → Save → copy the Bin ID
+  // 4. Fill in both values below
+  jsonbinId:  "YOUR_BIN_ID_HERE",
+  jsonbinKey: "YOUR_MASTER_KEY_HERE",
+
 };

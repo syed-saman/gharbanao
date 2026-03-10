@@ -5,18 +5,39 @@
 let selectedLocation = localStorage.getItem("nb_location") || "patna";
 
 // ─── INIT ────────────────────────────────────────────────────
-document.addEventListener("DOMContentLoaded", () => {
-  loadSavedData();   // merge admin-saved data (prices + images) into APP_DATA
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadSavedData();  // fetch latest data (JSONBin → localStorage fallback)
   renderAll();
   initScrollAnimations();
   initStickyNav();
   initConstructionParticles();
 });
 
-// Merge admin's localStorage snapshot (nb_admin_data) into the in-memory APP_DATA.
-// This is the same blob the admin portal saves, so prices AND item.image URLs
-// are always in sync — on every browser, not just the admin's device.
-function loadSavedData() {
+// Load admin data into APP_DATA.
+// Tries JSONBin first (cross-browser sync), falls back to localStorage cache.
+async function loadSavedData() {
+  const binId  = SITE_CONFIG.jsonbinId;
+  const binKey = SITE_CONFIG.jsonbinKey;
+
+  // ── Try JSONBin (works on every browser/device) ──────────
+  if (binId && binId !== "YOUR_BIN_ID_HERE") {
+    try {
+      const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+        headers: { "X-Master-Key": binKey }
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const data = json.record;
+        if (data.materials) APP_DATA.materials = data.materials;
+        if (data.services)  APP_DATA.services  = data.services;
+        // Update local cache so offline / slow loads still work
+        localStorage.setItem("nb_admin_data", JSON.stringify(data));
+        return;
+      }
+    } catch (e) { /* network error — fall through to cache */ }
+  }
+
+  // ── Fallback: localStorage cache (same browser only) ─────
   try {
     const saved = localStorage.getItem("nb_admin_data");
     if (!saved) return;
