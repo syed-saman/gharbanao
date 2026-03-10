@@ -416,6 +416,18 @@ a { text-decoration: none; color: inherit; }
 }
 .btn-remove-img:hover { background: #DC2626; }
 
+.img-uploading {
+  display: inline-block;
+  font-size: 0.75rem;
+  color: #78716C;
+  padding: 6px 4px;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
 /* RESPONSIVE */
 @media (max-width: 768px) {
   .sidebar { width: 100%; height: auto; position: relative; }

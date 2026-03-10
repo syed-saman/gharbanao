@@ -82,6 +82,7 @@
           <li>नया supplier जोड़ने के लिए "नया जोड़ें" बटन दबाएं</li>
           <li>Changes तुरंत live हो जाते हैं (browser storage में)</li>
           <li>WhatsApp number बदलने के लिए supplier card में edit करें</li>
+          <li>📷 फोटो अपलोड के लिए <code>js/config.js</code> में <b>imgbbApiKey</b> डालें — <a href="https://api.imgbb.com/" target="_blank" style="color:#D97706">api.imgbb.com</a> पर free key मिलेगी</li>
         </ul>
       </div>
     </div>
@@ -211,27 +212,51 @@ function getStoredImg(cat, supplierId, ii) {
   return localStorage.getItem(imgKey(cat, supplierId, ii)) || "";
 }
 
-// Compress + store image, then re-render
-function uploadItemImage(cat, si, ii, input) {
+// Upload image to ImgBB, save returned URL to localStorage
+async function uploadItemImage(cat, si, ii, input) {
   const file = input.files[0];
   if (!file) return;
+
+  // Check API key is configured
+  if (!SITE_CONFIG.imgbbApiKey || SITE_CONFIG.imgbbApiKey === "YOUR_IMGBB_API_KEY_HERE") {
+    alert("⚠️ ImgBB API key not set!\n\nSteps:\n1. Sign up free at https://imgbb.com\n2. Get your key at https://api.imgbb.com/\n3. Paste it in js/config.js → imgbbApiKey");
+    return;
+  }
+
+  // Show loading spinner in photo cell
+  const td = input.closest("td");
+  td.innerHTML = `<span class="img-uploading">⏳ अपलोड हो रहा है…</span>`;
+
   const reader = new FileReader();
-  reader.onload = function(e) {
-    const imgEl = new Image();
-    imgEl.onload = function() {
-      const canvas = document.createElement("canvas");
-      const MAX_W = 900, MAX_H = 600;
-      let w = imgEl.width, h = imgEl.height;
-      if (w > MAX_W) { h = Math.round(h * MAX_W / w); w = MAX_W; }
-      if (h > MAX_H) { w = Math.round(w * MAX_H / h); h = MAX_H; }
-      canvas.width = w; canvas.height = h;
-      canvas.getContext("2d").drawImage(imgEl, 0, 0, w, h);
-      const compressed = canvas.toDataURL("image/jpeg", 0.78);
-      localStorage.setItem(imgKey(cat, APP_DATA.materials[cat][si].id, ii), compressed);
+  reader.onload = async function(e) {
+    try {
+      // Strip "data:image/...;base64," prefix — ImgBB wants raw base64
+      const base64 = e.target.result.split(",")[1];
+
+      const formData = new FormData();
+      formData.append("key", SITE_CONFIG.imgbbApiKey);
+      formData.append("image", base64);
+      formData.append("name", `nb_${cat}_${si}_${ii}`);
+
+      const res = await fetch("https://api.imgbb.com/1/upload", {
+        method: "POST",
+        body: formData
+      });
+      const json = await res.json();
+
+      if (json.success) {
+        const url = json.data.display_url;   // permanent direct-link URL
+        localStorage.setItem(imgKey(cat, APP_DATA.materials[cat][si].id, ii), url);
+        renderMaterialSection(cat);
+        showToast();
+      } else {
+        alert("Upload failed: " + (json.error?.message || "Unknown error from ImgBB"));
+        renderMaterialSection(cat);
+      }
+    } catch (err) {
+      alert("Network error during upload:\n" + err.message);
       renderMaterialSection(cat);
-      showToast();
-    };
-    imgEl.src = e.target.result;
+    }
   };
   reader.readAsDataURL(file);
 }

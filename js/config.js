@@ -31,4 +31,11 @@ const SITE_CONFIG = {
   whatsappGreetingHi: "नमस्ते! मुझे निर्माण सामग्री के बारे में जानकारी चाहिए।",
   whatsappGreetingEn: "Hello! I need information about construction materials from Nirman Bazaar.",
 
+  // ── IMAGE HOSTING (ImgBB) ─────────────────────────────────
+  // Free image hosting — sign up at https://imgbb.com
+  // Get your API key from: https://api.imgbb.com/
+  // Images uploaded via admin portal will be stored on ImgBB's servers
+  // and visible to ALL visitors on ALL devices.
+  imgbbApiKey: "YOUR_IMGBB_API_KEY_HERE",
+
 };
