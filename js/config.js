@@ -44,7 +44,7 @@ const SITE_CONFIG = {
   // 2. Go to API Keys → copy your Master Key
   // 3. Click "Create Bin" → paste {} → Save → copy the Bin ID
   // 4. Fill in both values below
-  jsonbinId:  "YOUR_BIN_ID_HERE",
-  jsonbinKey: "YOUR_MASTER_KEY_HERE",
+  jsonbinId:  "69af889cae596e708f73321c",
+  jsonbinKey: "$2a$10$EVa6TXBQhpNNurgnPeqF1uMg0GNkYhcB4K2yXsUB2juE.VooKmu/a",
 
 };
