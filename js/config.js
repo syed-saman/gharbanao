@@ -36,6 +36,6 @@ const SITE_CONFIG = {
   // Get your API key from: https://api.imgbb.com/
   // Images uploaded via admin portal will be stored on ImgBB's servers
   // and visible to ALL visitors on ALL devices.
-  imgbbApiKey: "YOUR_IMGBB_API_KEY_HERE",
+  imgbbApiKey: "59a95d9717d7f373f243564d996de66b",
 
 };
