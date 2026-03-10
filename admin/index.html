@@ -154,24 +154,46 @@
 const ADMIN_CREDS = { user: SITE_CONFIG.adminUser, pass: SITE_CONFIG.adminPass };
 let currentUser = null;  // { role: "admin" } or { role: "supplier", supplierId, name }
 
-function doLogin() {
+// Save default credentials from data.js BEFORE any JSONBin loading overwrites them.
+// This ensures supplier logins always work even if the JSONBin snapshot is old.
+const _defaultCreds = {};
+["bricks","sand","stonechips"].forEach(cat => {
+  (APP_DATA.materials[cat] || []).forEach(sup => {
+    if (sup.loginId) _defaultCreds[sup.id] = { loginId: sup.loginId, loginPass: sup.loginPass };
+  });
+});
+
+async function doLogin() {
   const u = document.getElementById("adminUser").value.trim();
   const p = document.getElementById("adminPass").value.trim();
+  const errEl = document.getElementById("loginError");
+  const btn   = document.querySelector(".btn-login");
 
-  // 1. Check admin
+  // 1. Admin check — instant, no fetch needed
   if (u === ADMIN_CREDS.user && p === ADMIN_CREDS.pass) {
     currentUser = { role: "admin" };
     openPortal();
     return;
   }
 
-  // 2. Check suppliers across all material categories
-  loadAdminData(); // make sure latest data is loaded before checking
+  // 2. Fetch latest data from JSONBin so credentials are always up to date
+  errEl.textContent = "";
+  btn.textContent = "जाँच रहे हैं…";
+  btn.disabled = true;
+  await fetchLatestData();
+  btn.textContent = "Login →";
+  btn.disabled = false;
+
+  // 3. Check suppliers — JSONBin data merged with data.js defaults as fallback
   const cats = ["bricks", "sand", "stonechips"];
   for (const cat of cats) {
     const list = APP_DATA.materials[cat] || [];
     for (const sup of list) {
-      if (sup.loginId && sup.loginId === u && sup.loginPass === p) {
+      // Use credentials from JSONBin data; fall back to data.js defaults if missing
+      const creds = _defaultCreds[sup.id] || {};
+      const loginId   = sup.loginId   || creds.loginId;
+      const loginPass = sup.loginPass || creds.loginPass;
+      if (loginId && loginId === u && loginPass === p) {
         currentUser = { role: "supplier", supplierId: sup.id, name: sup.supplier };
         openPortal();
         return;
@@ -179,13 +201,35 @@ function doLogin() {
     }
   }
 
-  document.getElementById("loginError").textContent = "❌ गलत username या password";
+  errEl.textContent = "❌ गलत username या password";
+}
+
+// Fetch latest data from JSONBin into APP_DATA (falls back to localStorage cache)
+async function fetchLatestData() {
+  const binId  = SITE_CONFIG.jsonbinId;
+  const binKey = SITE_CONFIG.jsonbinKey;
+  if (binId && binId !== "YOUR_BIN_ID_HERE") {
+    try {
+      const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+        headers: { "X-Master-Key": binKey }
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const data = json.record;
+        if (data.materials) APP_DATA.materials = data.materials;
+        if (data.services)  APP_DATA.services  = data.services;
+        localStorage.setItem("nb_admin_data", JSON.stringify(data));
+        return;
+      }
+    } catch (e) { /* network error, fall through */ }
+  }
+  loadAdminData(); // fallback to localStorage cache
 }
 
 function openPortal() {
   document.getElementById("loginScreen").style.display = "none";
   document.getElementById("adminPortal").style.display = "flex";
-  loadAdminData();
+  // Data already fetched fresh in doLogin → no need to reload
 
   if (currentUser.role === "admin") {
     // Show admin nav, hide supplier nav
