@@ -275,7 +275,7 @@ function renderMaterialSection(cat) {
 
   suppliers.forEach((sup, si) => {
     let priceRows = sup.items.map((item, ii) => {
-      const stored = getStoredImg(cat, sup.id, ii);
+      const stored = getStoredImg(cat, si, ii);
       const imgCell = stored
         ? `<div class="img-cell">
              <img src="${stored}" class="item-img-thumb" alt="${item.grade}"/>
