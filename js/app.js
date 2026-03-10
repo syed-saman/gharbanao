@@ -138,10 +138,11 @@ function renderMaterials(catId) {
   }
 
   // Look up category image/fallback bg
-  const catMeta = APP_DATA.categories.find(c => c.id === catId) || {};
-  const catImg  = catMeta.image   || "";
-  const catBg   = catMeta.imageBg || "linear-gradient(135deg,#D9770622,#F59E0B22)";
-  const catAlt  = catMeta.imageAlt || catMeta.nameEn || catId;
+  const catMeta     = APP_DATA.categories.find(c => c.id === catId) || {};
+  const catImg      = catMeta.image        || "";
+  const catFallback = catMeta.imageFallback|| "";
+  const catBg       = catMeta.imageBg      || "linear-gradient(135deg,#D9770622,#F59E0B22)";
+  const catAlt      = catMeta.imageAlt     || catMeta.nameEn || catId;
 
   let html = "";
   filtered.forEach((supplier, idx) => {
@@ -158,14 +159,17 @@ function renderMaterials(catId) {
       </div>`;
     }).join("");
 
-    // Image block — shows photo or a gradient fallback if image fails
+    // Image block — local image first, Unsplash fallback, then gradient bg
+    const fallbackAttr = catFallback
+      ? `onerror="if(this.src!=='${catFallback}'){this.src='${catFallback}'}else{this.style.display='none'}"`
+      : `onerror="this.style.display='none'"`;
     const imgBlock = catImg
       ? `<div class="card-img-wrap" style="background:${catBg}">
            <img class="card-img"
                 src="${catImg}"
                 alt="${catAlt}"
                 loading="lazy"
-                onerror="this.style.display='none'"/>
+                ${fallbackAttr}/>
            <div class="card-img-overlay"></div>
            <span class="card-img-label">${catMeta.icon || ""} ${currentLang === "hi" ? catMeta.name : catMeta.nameEn}</span>
          </div>`
