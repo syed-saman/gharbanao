@@ -137,12 +137,13 @@ function renderMaterials(catId) {
     return;
   }
 
-  // Look up category image/fallback bg
+  // Look up category meta, images array, fallback
   const catMeta     = APP_DATA.categories.find(c => c.id === catId) || {};
-  const catImg      = catMeta.image        || "";
+  const catImages   = catMeta.images       || [];
   const catFallback = catMeta.imageFallback|| "";
   const catBg       = catMeta.imageBg      || "linear-gradient(135deg,#D9770622,#F59E0B22)";
   const catAlt      = catMeta.imageAlt     || catMeta.nameEn || catId;
+  const catLabel    = `${catMeta.icon || ""} ${currentLang === "hi" ? catMeta.name : catMeta.nameEn}`;
 
   let html = "";
   filtered.forEach((supplier, idx) => {
@@ -159,21 +160,44 @@ function renderMaterials(catId) {
       </div>`;
     }).join("");
 
-    // Image block — local image first, Unsplash fallback, then gradient bg
-    const fallbackAttr = catFallback
-      ? `onerror="if(this.src!=='${catFallback}'){this.src='${catFallback}'}else{this.style.display='none'}"`
-      : `onerror="this.style.display='none'"`;
-    const imgBlock = catImg
-      ? `<div class="card-img-wrap" style="background:${catBg}">
-           <img class="card-img"
-                src="${catImg}"
-                alt="${catAlt}"
-                loading="lazy"
-                ${fallbackAttr}/>
-           <div class="card-img-overlay"></div>
-           <span class="card-img-label">${catMeta.icon || ""} ${currentLang === "hi" ? catMeta.name : catMeta.nameEn}</span>
+    // ── Carousel image block ──────────────────────────────────
+    const carId = `cr-${catId}-${idx}`;
+    const fallbackFn = catFallback
+      ? `if(this.src!=='${catFallback}'){this.src='${catFallback}'}else{this.closest('.carousel-slide').style.display='none'}`
+      : `this.closest('.carousel-slide').style.display='none'`;
+
+    let imgBlock = "";
+    if (catImages.length) {
+      const slides = catImages.map((src, i) =>
+        `<div class="carousel-slide${i === 0 ? " active" : ""}">
+           <img class="card-img" src="${src}" alt="${catAlt} ${i+1}"
+                loading="lazy" onerror="${fallbackFn}"/>
          </div>`
-      : "";
+      ).join("");
+
+      const dots = catImages.length > 1
+        ? `<div class="carousel-dots">
+             ${catImages.map((_, i) =>
+               `<span class="c-dot${i === 0 ? " active" : ""}" onclick="carouselGo('${carId}',${i})"></span>`
+             ).join("")}
+           </div>`
+        : "";
+
+      const arrows = catImages.length > 1
+        ? `<button class="carousel-btn c-prev" onclick="carouselMove('${carId}',-1)" aria-label="prev">&#8249;</button>
+           <button class="carousel-btn c-next" onclick="carouselMove('${carId}', 1)" aria-label="next">&#8250;</button>`
+        : "";
+
+      imgBlock = `<div class="card-img-wrap" style="background:${catBg}">
+        <div class="carousel" id="${carId}">
+          ${slides}
+          ${arrows}
+          ${dots}
+          <div class="card-img-overlay"></div>
+          <span class="card-img-label">${catLabel}</span>
+        </div>
+      </div>`;
+    }
 
     html += `<div class="material-card reveal-card" style="animation-delay:${idx * 0.1}s">
       ${imgBlock}
@@ -362,4 +386,25 @@ function scrollToSection(id) {
 // ─── MOBILE NAV ──────────────────────────────────────────────
 function toggleMobileNav() {
   document.querySelector(".nav-links").classList.toggle("open");
+}
+
+// ─── IMAGE CAROUSEL ──────────────────────────────────────────
+function carouselMove(id, dir) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const slides = el.querySelectorAll(".carousel-slide");
+  const dots   = el.querySelectorAll(".c-dot");
+  let cur = [...slides].findIndex(s => s.classList.contains("active"));
+  slides[cur].classList.remove("active");
+  dots[cur]?.classList.remove("active");
+  cur = (cur + dir + slides.length) % slides.length;
+  slides[cur].classList.add("active");
+  dots[cur]?.classList.add("active");
+}
+
+function carouselGo(id, idx) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.querySelectorAll(".carousel-slide").forEach((s, i) => s.classList.toggle("active", i === idx));
+  el.querySelectorAll(".c-dot").forEach((d, i) => d.classList.toggle("active", i === idx));
 }

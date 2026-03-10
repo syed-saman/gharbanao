@@ -14,24 +14,36 @@ const APP_DATA = {
   categories: [
     {
       id: "bricks", icon: "🧱", name: "ईंट", nameEn: "Bricks",
-      // ✏️ Replace with your own photo: images/materials/bricks.jpg
-      image: "images/materials/bricks.jpg",
+      // ✏️ Add your photos as bricks1.jpg, bricks2.jpg, bricks3.jpg … in images/materials/
+      images: [
+        "images/materials/bricks1.jpg",
+        "images/materials/bricks2.jpg",
+        "images/materials/bricks3.jpg",
+      ],
       imageFallback: "https://images.unsplash.com/photo-1587582345426-bf07f534a79c?auto=format&fit=crop&w=700&q=85",
       imageAlt: "Red clay construction bricks",
       imageBg: "linear-gradient(135deg,#c0392b22,#e67e2222)"
     },
     {
       id: "sand", icon: "⛱️", name: "बालू / रेत", nameEn: "Sand",
-      // ✏️ Replace with your own photo: images/materials/sand.jpg
-      image: "images/materials/sand.jpg",
+      // ✏️ Add your photos as sand1.jpg, sand2.jpg, sand3.jpg … in images/materials/
+      images: [
+        "images/materials/sand1.jpg",
+        "images/materials/sand2.jpg",
+        "images/materials/sand3.jpg",
+      ],
       imageFallback: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=700&q=85",
       imageAlt: "Construction sand",
       imageBg: "linear-gradient(135deg,#f39c1222,#f1c40f22)"
     },
     {
       id: "stonechips", icon: "🪨", name: "स्टोन चिप्स", nameEn: "Stone Chips",
-      // ✏️ Replace with your own photo: images/materials/stonechips.jpg
-      image: "images/materials/stonechips.jpg",
+      // ✏️ Add your photos as stonechips1.jpg, stonechips2.jpg … in images/materials/
+      images: [
+        "images/materials/stonechips1.jpg",
+        "images/materials/stonechips2.jpg",
+        "images/materials/stonechips3.jpg",
+      ],
       imageFallback: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=700&q=85",
       imageAlt: "Crushed stone chips aggregate",
       imageBg: "linear-gradient(135deg,#7f8c8d22,#2c3e5022)"
