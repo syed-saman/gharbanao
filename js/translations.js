@@ -56,6 +56,19 @@ const TRANSLATIONS = {
     why4_title: "एक जगह सब कुछ",
     why4_desc: "सामग्री से लेकर मजदूर और इंजीनियर तक — सब यहाँ।",
 
+    // Hero chips
+    chip_bricks: "🧱 ₹8,500/हजार",
+    chip_sand: "⛱️ ₹4,500/ट्रॉली",
+    chip_stone: "🪨 ₹1,650/टन",
+
+    // Footer links
+    footer_bricks: "ईंट",
+    footer_sand: "बालू / रेत",
+    footer_stone: "स्टोन चिप्स",
+    footer_labour: "राजमिस्त्री / मजदूर",
+    footer_contractor: "ठेकेदार",
+    footer_engineer: "सिविल इंजीनियर",
+
     // Footer
     footer_tagline: "बिहार का भरोसेमंद निर्माण बाज़ार",
     footer_contact: "संपर्क करें",
@@ -125,6 +138,19 @@ const TRANSLATIONS = {
     why3_desc: "No app downloads. Talk directly on WhatsApp.",
     why4_title: "Everything in One Place",
     why4_desc: "From materials to labourers and engineers — all here.",
+
+    // Hero chips
+    chip_bricks: "🧱 ₹8,500/thousand",
+    chip_sand: "⛱️ ₹4,500/trolley",
+    chip_stone: "🪨 ₹1,650/ton",
+
+    // Footer links
+    footer_bricks: "Bricks",
+    footer_sand: "Sand / Gravel",
+    footer_stone: "Stone Chips",
+    footer_labour: "Mason / Labour",
+    footer_contractor: "Contractor",
+    footer_engineer: "Civil Engineer",
 
     footer_tagline: "Bihar's trusted construction marketplace",
     footer_contact: "Contact Us",

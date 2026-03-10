@@ -62,9 +62,9 @@
       <div class="hero-building">
         🏗️
         <div class="floating-chips">
-          <div class="chip">🧱 ₹8,500/हजार</div>
-          <div class="chip">⛱️ ₹4,500/ट्रॉली</div>
-          <div class="chip">🪨 ₹1,650/टन</div>
+          <div class="chip" data-t="chip_bricks">🧱 ₹8,500/हजार</div>
+          <div class="chip" data-t="chip_sand">⛱️ ₹4,500/ट्रॉली</div>
+          <div class="chip" data-t="chip_stone">🪨 ₹1,650/टन</div>
         </div>
       </div>
     </div>
@@ -187,17 +187,17 @@
       <div class="footer-col">
         <h4 data-t="nav_materials">सामग्री</h4>
         <ul>
-          <li><a onclick="switchCategory('bricks');scrollToSection('materials')">ईंट</a></li>
-          <li><a onclick="switchCategory('sand');scrollToSection('materials')">बालू / रेत</a></li>
-          <li><a onclick="switchCategory('stonechips');scrollToSection('materials')">स्टोन चिप्स</a></li>
+          <li><a onclick="switchCategory('bricks');scrollToSection('materials')" data-t="footer_bricks">ईंट</a></li>
+          <li><a onclick="switchCategory('sand');scrollToSection('materials')" data-t="footer_sand">बालू / रेत</a></li>
+          <li><a onclick="switchCategory('stonechips');scrollToSection('materials')" data-t="footer_stone">स्टोन चिप्स</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4 data-t="nav_services">सेवाएं</h4>
         <ul>
-          <li><a onclick="scrollToSection('services')">राजमिस्त्री / मजदूर</a></li>
-          <li><a onclick="scrollToSection('services')">ठेकेदार</a></li>
-          <li><a onclick="scrollToSection('services')">सिविल इंजीनियर</a></li>
+          <li><a onclick="scrollToSection('services')" data-t="footer_labour">राजमिस्त्री / मजदूर</a></li>
+          <li><a onclick="scrollToSection('services')" data-t="footer_contractor">ठेकेदार</a></li>
+          <li><a onclick="scrollToSection('services')" data-t="footer_engineer">सिविल इंजीनियर</a></li>
           <li><a href="admin/index.html" class="admin-link" data-t="footer_admin">एडमिन पोर्टल</a></li>
         </ul>
       </div>

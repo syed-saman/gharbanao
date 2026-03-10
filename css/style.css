@@ -228,6 +228,7 @@ img { max-width: 100%; }
 .hero-visual {
   display: flex;
   justify-content: center;
+  padding-right: 60px;
 }
 .hero-building {
   width: 100%;
@@ -241,7 +242,7 @@ img { max-width: 100%; }
   font-size: 8rem;
   border: 1px solid rgba(217,119,6,0.15);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 .hero-building::after {
   content: "";
@@ -249,13 +250,15 @@ img { max-width: 100%; }
   bottom: 0; left: 0; right: 0;
   height: 40%;
   background: linear-gradient(to top, rgba(217,119,6,0.08), transparent);
+  border-radius: 0 0 24px 24px;
+  pointer-events: none;
 }
 .floating-chips {
   position: absolute;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  right: -20px;
+  right: -70px;
   top: 50%;
   transform: translateY(-50%);
 }
