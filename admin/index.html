@@ -154,6 +154,14 @@
 const ADMIN_CREDS = { user: SITE_CONFIG.adminUser, pass: SITE_CONFIG.adminPass };
 let currentUser = null;  // { role: "admin" } or { role: "supplier", supplierId, name }
 
+// Clean up old localStorage entries from previous versions
+(function() {
+  const toRemove = Object.keys(localStorage).filter(k =>
+    k === "nb_admin_data" || k.startsWith("nb_img_")
+  );
+  toRemove.forEach(k => localStorage.removeItem(k));
+})();
+
 // Save default credentials from data.js BEFORE any JSONBin loading overwrites them.
 // This ensures supplier logins always work even if the JSONBin snapshot is old.
 const _defaultCreds = {};
@@ -204,26 +212,22 @@ async function doLogin() {
   errEl.textContent = "❌ गलत username या password";
 }
 
-// Fetch latest data from JSONBin into APP_DATA (falls back to localStorage cache)
+// Fetch latest data from JSONBin — no localStorage involved
 async function fetchLatestData() {
   const binId  = SITE_CONFIG.jsonbinId;
   const binKey = SITE_CONFIG.jsonbinKey;
-  if (binId && binId !== "YOUR_BIN_ID_HERE") {
-    try {
-      const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-        headers: { "X-Master-Key": binKey }
-      });
-      if (res.ok) {
-        const json = await res.json();
-        const data = json.record;
-        if (data.materials) APP_DATA.materials = data.materials;
-        if (data.services)  APP_DATA.services  = data.services;
-        localStorage.setItem("nb_admin_data", JSON.stringify(data));
-        return;
-      }
-    } catch (e) { /* network error, fall through */ }
-  }
-  loadAdminData(); // fallback to localStorage cache
+  if (!binId || binId === "YOUR_BIN_ID_HERE") return;
+  try {
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+      headers: { "X-Master-Key": binKey }
+    });
+    if (res.ok) {
+      const json = await res.json();
+      const data = json.record;
+      if (data.materials) APP_DATA.materials = data.materials;
+      if (data.services)  APP_DATA.services  = data.services;
+    }
+  } catch (e) { /* network error — data.js defaults remain */ }
 }
 
 function openPortal() {
@@ -283,53 +287,38 @@ function renderSection(id) {
   else if (id === "services") renderServicesSection();
 }
 
-// ── LOAD / SAVE DATA ──────────────────────────────────────
-function loadAdminData() {
-  const saved = localStorage.getItem("nb_admin_data");
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      APP_DATA.materials = parsed.materials || APP_DATA.materials;
-      APP_DATA.services = parsed.services || APP_DATA.services;
-    } catch(e) {}
-  }
-}
-
+// ── LOAD / SAVE DATA — JSONBin is the single source of truth ──
 async function saveAdminData() {
-  const payload = {
-    materials: APP_DATA.materials,
-    services:  APP_DATA.services,
-    lastUpdated: new Date().toLocaleDateString("hi-IN")
-  };
-  // Always save locally first (instant)
-  localStorage.setItem("nb_admin_data", JSON.stringify(payload));
-
-  // Sync to JSONBin so ALL browsers/devices see the changes
   const binId  = SITE_CONFIG.jsonbinId;
   const binKey = SITE_CONFIG.jsonbinKey;
   if (!binId || binId === "YOUR_BIN_ID_HERE") {
-    showToast("⚠️ JSONBin not configured — changes won't sync to other browsers");
+    showToast("⚠️ JSONBin not configured in config.js");
     return;
   }
+  const payload = {
+    materials:   APP_DATA.materials,
+    services:    APP_DATA.services,
+    lastUpdated: new Date().toLocaleDateString("hi-IN")
+  };
   try {
-    showToast("⏳ Syncing…");
+    showToast("⏳ Saving…");
     const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
       method:  "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Master-Key": binKey
-      },
+      headers: { "Content-Type": "application/json", "X-Master-Key": binKey },
       body: JSON.stringify(payload)
     });
     if (res.ok) {
-      showToast("✅ सफलतापूर्वक सेव और sync हुआ!");
+      showToast("✅ सफलतापूर्वक सेव हुआ — सभी devices पर live!");
     } else {
-      showToast("⚠️ Local save OK — JSONBin sync failed (check key/id)");
+      showToast("⚠️ Save failed — check JSONBin key/id in config.js");
     }
   } catch (e) {
-    showToast("⚠️ Local save OK — no internet for sync");
+    showToast("⚠️ Network error — changes not saved");
   }
 }
+
+// Keep loadAdminData as a no-op stub so existing call sites don't break
+function loadAdminData() { /* data comes from JSONBin via fetchLatestData() */ }
 
 function showToast(msg) {
   const t = document.getElementById("toast");

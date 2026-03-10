@@ -2,6 +2,15 @@
 // APP.JS — Core application logic
 // ============================================================
 
+// Clean up old localStorage entries from previous versions (one-time)
+(function() {
+  const toRemove = Object.keys(localStorage).filter(k =>
+    k === "nb_admin_data" || k.startsWith("nb_img_")
+  );
+  toRemove.forEach(k => localStorage.removeItem(k));
+})();
+
+// nb_location is fine in localStorage — it's just a UI preference (selected city)
 let selectedLocation = localStorage.getItem("nb_location") || "patna";
 
 // ─── INIT ────────────────────────────────────────────────────
@@ -13,38 +22,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   initConstructionParticles();
 });
 
-// Load admin data into APP_DATA.
-// Tries JSONBin first (cross-browser sync), falls back to localStorage cache.
+// Load latest data from JSONBin — single source of truth for all browsers/devices.
+// Falls back to data.js defaults if JSONBin is unreachable or not configured.
 async function loadSavedData() {
   const binId  = SITE_CONFIG.jsonbinId;
   const binKey = SITE_CONFIG.jsonbinKey;
+  if (!binId || binId === "YOUR_BIN_ID_HERE") return;
 
-  // ── Try JSONBin (works on every browser/device) ──────────
-  if (binId && binId !== "YOUR_BIN_ID_HERE") {
-    try {
-      const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-        headers: { "X-Master-Key": binKey }
-      });
-      if (res.ok) {
-        const json = await res.json();
-        const data = json.record;
-        if (data.materials) APP_DATA.materials = data.materials;
-        if (data.services)  APP_DATA.services  = data.services;
-        // Update local cache so offline / slow loads still work
-        localStorage.setItem("nb_admin_data", JSON.stringify(data));
-        return;
-      }
-    } catch (e) { /* network error — fall through to cache */ }
-  }
-
-  // ── Fallback: localStorage cache (same browser only) ─────
   try {
-    const saved = localStorage.getItem("nb_admin_data");
-    if (!saved) return;
-    const parsed = JSON.parse(saved);
-    if (parsed.materials) APP_DATA.materials = parsed.materials;
-    if (parsed.services)  APP_DATA.services  = parsed.services;
-  } catch (e) { /* ignore corrupt data */ }
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+      headers: { "X-Master-Key": binKey }
+    });
+    if (res.ok) {
+      const json = await res.json();
+      const data = json.record;
+      if (data.materials) APP_DATA.materials = data.materials;
+      if (data.services)  APP_DATA.services  = data.services;
+    }
+  } catch (e) { /* network error — data.js defaults will be used */ }
 }
 
 function renderAll() {
