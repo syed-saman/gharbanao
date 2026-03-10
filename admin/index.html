@@ -40,15 +40,19 @@
         <div style="font-size:0.7rem;opacity:0.5;font-weight:400;">Admin Portal</div>
       </div>
     </div>
-    <nav class="sidebar-nav">
-      <div class="nav-section">Dashboard</div>
-      <a class="active" onclick="showSection('overview')">📊 Overview</a>
-      <div class="nav-section">सामग्री</div>
-      <a onclick="showSection('bricks')">🧱 ईंट (Bricks)</a>
-      <a onclick="showSection('sand')">⛱️ बालू (Sand)</a>
-      <a onclick="showSection('stonechips')">🪨 स्टोन चिप्स</a>
-      <div class="nav-section">अन्य</div>
-      <a onclick="showSection('services')">👷 सेवाएं</a>
+    <nav class="sidebar-nav" id="sidebarNav">
+      <!-- Admin-only nav (hidden for suppliers) -->
+      <div class="nav-section ao">Dashboard</div>
+      <a class="active ao" onclick="showSection('overview')">📊 Overview</a>
+      <div class="nav-section ao">सामग्री</div>
+      <a class="ao" onclick="showSection('bricks')">🧱 ईंट (Bricks)</a>
+      <a class="ao" onclick="showSection('sand')">⛱️ बालू (Sand)</a>
+      <a class="ao" onclick="showSection('stonechips')">🪨 स्टोन चिप्स</a>
+      <div class="nav-section ao">अन्य</div>
+      <a class="ao" onclick="showSection('services')">👷 सेवाएं</a>
+      <!-- Supplier-only nav (hidden for admin) -->
+      <div class="nav-section so" style="display:none">मेरा खाता</div>
+      <a class="so active" style="display:none" onclick="showSection('supplier')">🏪 मेरी लिस्टिंग</a>
       <a href="../index.html">🌐 वेबसाइट देखें</a>
     </nav>
     <div class="sidebar-footer">
@@ -122,6 +126,18 @@
       <div id="services-list"></div>
     </div>
 
+    <!-- SUPPLIER PORTAL (shown only when logged in as supplier) -->
+    <div id="sec-supplier" class="admin-section">
+      <div class="admin-header">
+        <div>
+          <h1 id="supplierPortalTitle">🏪 मेरी लिस्टिंग</h1>
+          <p>कीमतें और फोटो अपडेट करें — Save करने पर तुरंत live होगा</p>
+        </div>
+        <a href="../index.html" class="back-link">🌐 वेबसाइट देखें →</a>
+      </div>
+      <div id="supplier-listings"></div>
+    </div>
+
   </main>
 </div>
 
@@ -134,25 +150,71 @@
 <script src="../js/data.js"></script>
 
 <script>
-// ── AUTH — credentials are set in js/config.js ────────────
+// ── AUTH ───────────────────────────────────────────────────
 const ADMIN_CREDS = { user: SITE_CONFIG.adminUser, pass: SITE_CONFIG.adminPass };
+let currentUser = null;  // { role: "admin" } or { role: "supplier", supplierId, name }
 
 function doLogin() {
-  const u = document.getElementById("adminUser").value;
-  const p = document.getElementById("adminPass").value;
+  const u = document.getElementById("adminUser").value.trim();
+  const p = document.getElementById("adminPass").value.trim();
+
+  // 1. Check admin
   if (u === ADMIN_CREDS.user && p === ADMIN_CREDS.pass) {
-    document.getElementById("loginScreen").style.display = "none";
-    document.getElementById("adminPortal").style.display = "flex";
-    loadAdminData();
+    currentUser = { role: "admin" };
+    openPortal();
+    return;
+  }
+
+  // 2. Check suppliers across all material categories
+  loadAdminData(); // make sure latest data is loaded before checking
+  const cats = ["bricks", "sand", "stonechips"];
+  for (const cat of cats) {
+    const list = APP_DATA.materials[cat] || [];
+    for (const sup of list) {
+      if (sup.loginId && sup.loginId === u && sup.loginPass === p) {
+        currentUser = { role: "supplier", supplierId: sup.id, name: sup.supplier };
+        openPortal();
+        return;
+      }
+    }
+  }
+
+  document.getElementById("loginError").textContent = "❌ गलत username या password";
+}
+
+function openPortal() {
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("adminPortal").style.display = "flex";
+  loadAdminData();
+
+  if (currentUser.role === "admin") {
+    // Show admin nav, hide supplier nav
+    document.querySelectorAll(".ao").forEach(el => el.style.display = "");
+    document.querySelectorAll(".so").forEach(el => el.style.display = "none");
+    // Update brand
+    document.querySelector(".sidebar-brand div div:first-child").textContent = "निर्माण बाजार";
     renderAllSections();
   } else {
-    document.getElementById("loginError").textContent = "❌ गलत username या password";
+    // Hide admin nav, show supplier nav
+    document.querySelectorAll(".ao").forEach(el => el.style.display = "none");
+    document.querySelectorAll(".so").forEach(el => el.style.display = "");
+    // Update brand to supplier name
+    document.querySelector(".sidebar-brand div div:first-child").textContent = currentUser.name;
+    document.getElementById("supplierPortalTitle").textContent = "🏪 " + currentUser.name;
+    // Show supplier section
+    document.querySelectorAll(".admin-section").forEach(s => s.classList.remove("active"));
+    document.getElementById("sec-supplier").classList.add("active");
+    renderSupplierPortal();
   }
 }
 
 function doLogout() {
+  currentUser = null;
   document.getElementById("loginScreen").style.display = "flex";
   document.getElementById("adminPortal").style.display = "none";
+  document.getElementById("adminUser").value = "";
+  document.getElementById("adminPass").value = "";
+  document.getElementById("loginError").textContent = "";
 }
 
 // ── NAVIGATION ────────────────────────────────────────────
@@ -274,8 +336,9 @@ async function uploadItemImage(cat, si, ii, input) {
       if (json.success) {
         const url = json.data.display_url;   // permanent direct-link URL
         APP_DATA.materials[cat][si].items[ii].image = url;  // store on item
-        saveAdminData();   // persists into nb_admin_data → syncs across browsers
-        renderMaterialSection(cat);
+        await saveAdminData();   // persists into nb_admin_data → syncs across browsers
+        if (currentUser?.role === "supplier") renderSupplierPortal();
+        else renderMaterialSection(cat);
       } else {
         alert("Upload failed: " + (json.error?.message || "Unknown error from ImgBB"));
         renderMaterialSection(cat);
@@ -291,7 +354,76 @@ async function uploadItemImage(cat, si, ii, input) {
 function removeItemImage(cat, si, ii) {
   delete APP_DATA.materials[cat][si].items[ii].image;
   saveAdminData();
-  renderMaterialSection(cat);
+  if (currentUser?.role === "supplier") renderSupplierPortal();
+  else renderMaterialSection(cat);
+}
+
+// ── SUPPLIER PORTAL ───────────────────────────────────────
+function renderSupplierPortal() {
+  const container = document.getElementById("supplier-listings");
+  if (!container) return;
+  const supplierId = currentUser.supplierId;
+  const cats = ["bricks", "sand", "stonechips"];
+  let html = "";
+
+  for (const cat of cats) {
+    const suppliers = APP_DATA.materials[cat] || [];
+    const realSi = suppliers.findIndex(s => s.id === supplierId);
+    if (realSi === -1) continue;
+    html += buildSupplierCard(cat, realSi);
+  }
+
+  container.innerHTML = html || `<div class="admin-card"><p style="color:#78716C">कोई लिस्टिंग नहीं मिली।</p></div>`;
+}
+
+function buildSupplierCard(cat, realSi) {
+  const sup = APP_DATA.materials[cat][realSi];
+  const catLabel = { bricks: "🧱 ईंट", sand: "⛱️ बालू", stonechips: "🪨 स्टोन चिप्स" }[cat] || cat;
+
+  let priceRows = sup.items.map((item, ii) => {
+    const stored = getStoredImg(cat, realSi, ii);
+    const imgCell = stored
+      ? `<div class="img-cell">
+           <img src="${stored}" class="item-img-thumb" alt="${item.grade}"/>
+           <button class="btn-remove-img" onclick="removeItemImage('${cat}',${realSi},${ii})" title="Remove photo">✕</button>
+         </div>`
+      : `<label class="btn-upload-img" title="Upload photo">
+           📷 <span>फोटो</span>
+           <input type="file" accept="image/*" style="display:none"
+             onchange="uploadItemImage('${cat}',${realSi},${ii},this)"/>
+         </label>`;
+    return `<tr>
+      <td><strong style="font-size:0.88rem">${item.grade}</strong></td>
+      <td><input type="number" value="${item.price}" oninput="updateField('${cat}',${realSi},'items',${ii},'price',this.value)"/></td>
+      <td style="color:#78716C;font-size:0.82rem">${item.unit}</td>
+      <td class="img-td">${imgCell}</td>
+    </tr>`;
+  }).join("");
+
+  return `<div class="admin-card">
+    <div class="admin-card-header">
+      <h3>${sup.supplier}</h3>
+      <span class="supplier-badge">${catLabel}</span>
+    </div>
+    <p style="font-size:0.8rem;color:#78716C;margin:0 0 14px">📱 WhatsApp: +${sup.whatsapp}</p>
+    <div class="table-scroll">
+      <table class="price-table">
+        <thead><tr><th>Grade / Type</th><th>Price (₹)</th><th>Unit</th><th>Photo</th></tr></thead>
+        <tbody>${priceRows}</tbody>
+      </table>
+    </div>
+    <div class="card-actions" style="margin-top:16px">
+      <button class="btn-save" onclick="saveSupplierData('${cat}')">💾 Save &amp; Publish</button>
+    </div>
+    <p style="font-size:0.75rem;color:#a3a3a3;margin:8px 0 0;text-align:right">
+      Save करने पर सभी browsers पर तुरंत update होगा
+    </p>
+  </div>`;
+}
+
+async function saveSupplierData(cat) {
+  await saveAdminData();
+  renderSupplierPortal();
 }
 
 // ── MATERIAL SECTION ──────────────────────────────────────
@@ -336,6 +468,18 @@ function renderMaterialSection(cat) {
         <div class="form-field">
           <label>WhatsApp Number</label>
           <input type="text" value="${sup.whatsapp}" oninput="updateField('${cat}',${si},null,null,'whatsapp',this.value)"/>
+        </div>
+      </div>
+      <div class="form-row supplier-creds-row">
+        <div class="form-field">
+          <label class="creds-label">🔑 Supplier Login ID <span>सप्लायर को WhatsApp पर शेयर करें</span></label>
+          <input type="text" value="${sup.loginId || ''}" placeholder="e.g. ram"
+            oninput="updateField('${cat}',${si},null,null,'loginId',this.value)"/>
+        </div>
+        <div class="form-field">
+          <label class="creds-label">🔒 Supplier Password</label>
+          <input type="text" value="${sup.loginPass || ''}" placeholder="e.g. ram123"
+            oninput="updateField('${cat}',${si},null,null,'loginPass',this.value)"/>
         </div>
       </div>
       <div class="table-scroll">

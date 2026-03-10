@@ -428,6 +428,25 @@ a { text-decoration: none; color: inherit; }
   50% { opacity: 0.4; }
 }
 
+/* SUPPLIER CREDENTIALS ROW */
+.supplier-creds-row {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+.creds-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem !important;
+  color: #9ca3af !important;
+}
+.creds-label span {
+  font-size: 0.7rem;
+  color: #d97706;
+  font-weight: 400;
+}
+
 /* RESPONSIVE */
 @media (max-width: 768px) {
   .sidebar { width: 100%; height: auto; position: relative; }
