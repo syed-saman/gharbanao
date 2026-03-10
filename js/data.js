@@ -16,9 +16,8 @@ const APP_DATA = {
       id: "bricks", icon: "🧱", name: "ईंट", nameEn: "Bricks",
       // ✏️ Add your photos as bricks1.jpg, bricks2.jpg, bricks3.jpg … in images/materials/
       images: [
-        "images/materials/bricks1.jpg",
-        "images/materials/bricks2.jpg",
-        "images/materials/bricks3.jpg",
+        "images/materials/bricks1.png",
+        "images/materials/bricks2.png",
       ],
       imageFallback: "https://images.unsplash.com/photo-1587582345426-bf07f534a79c?auto=format&fit=crop&w=700&q=85",
       imageAlt: "Red clay construction bricks",
@@ -28,9 +27,8 @@ const APP_DATA = {
       id: "sand", icon: "⛱️", name: "बालू / रेत", nameEn: "Sand",
       // ✏️ Add your photos as sand1.jpg, sand2.jpg, sand3.jpg … in images/materials/
       images: [
-        "images/materials/sand1.jpg",
-        "images/materials/sand2.jpg",
-        "images/materials/sand3.jpg",
+        "images/materials/sand1.png",
+        "images/materials/sand2.png",
       ],
       imageFallback: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=700&q=85",
       imageAlt: "Construction sand",
@@ -40,9 +38,8 @@ const APP_DATA = {
       id: "stonechips", icon: "🪨", name: "स्टोन चिप्स", nameEn: "Stone Chips",
       // ✏️ Add your photos as stonechips1.jpg, stonechips2.jpg … in images/materials/
       images: [
-        "images/materials/stonechips1.jpg",
-        "images/materials/stonechips2.jpg",
-        "images/materials/stonechips3.jpg",
+        "images/materials/stonechips1.png",
+        "images/materials/stonechips2.png",
       ],
       imageFallback: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=700&q=85",
       imageAlt: "Crushed stone chips aggregate",
