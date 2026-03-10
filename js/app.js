@@ -137,12 +137,11 @@ function renderMaterials(catId) {
     return;
   }
 
-  // Look up category meta, images array, fallback
+  // Category meta (gradient bg + Unsplash placeholder until admin uploads)
   const catMeta     = APP_DATA.categories.find(c => c.id === catId) || {};
-  const catImages   = catMeta.images       || [];
-  const catFallback = catMeta.imageFallback|| "";
-  const catBg       = catMeta.imageBg      || "linear-gradient(135deg,#D9770622,#F59E0B22)";
-  const catAlt      = catMeta.imageAlt     || catMeta.nameEn || catId;
+  const catFallback = catMeta.imageFallback || "";
+  const catBg       = catMeta.imageBg       || "linear-gradient(135deg,#D9770622,#F59E0B22)";
+  const catAlt      = catMeta.imageAlt      || catMeta.nameEn || catId;
   const catLabel    = `${catMeta.icon || ""} ${currentLang === "hi" ? catMeta.name : catMeta.nameEn}`;
 
   let html = "";
@@ -160,42 +159,48 @@ function renderMaterials(catId) {
       </div>`;
     }).join("");
 
-    // ── Carousel image block ──────────────────────────────────
-    const carId = `cr-${catId}-${idx}`;
-    const fallbackFn = catFallback
-      ? `if(this.src!=='${catFallback}'){this.src='${catFallback}'}else{this.closest('.carousel-slide').style.display='none'}`
-      : `this.closest('.carousel-slide').style.display='none'`;
+    // ── Carousel: per-item images from localStorage (uploaded via admin) ──
+    const itemImgs = supplier.items.map((item, ii) => {
+      const src = localStorage.getItem(`nb_img_${catId}_${supplier.id}_${ii}`);
+      return src ? { src, caption: currentLang === "hi" ? item.grade : item.gradeEn } : null;
+    }).filter(Boolean);
 
+    const carId = `cr-${catId}-${idx}`;
     let imgBlock = "";
-    if (catImages.length) {
-      const slides = catImages.map((src, i) =>
+
+    if (itemImgs.length) {
+      // Admin-uploaded per-grade images → show carousel
+      const slides = itemImgs.map((img, i) =>
         `<div class="carousel-slide${i === 0 ? " active" : ""}">
-           <img class="card-img" src="${src}" alt="${catAlt} ${i+1}"
-                loading="lazy" onerror="${fallbackFn}"/>
+           <img class="card-img" src="${img.src}" alt="${img.caption}" loading="lazy"/>
          </div>`
       ).join("");
-
-      const dots = catImages.length > 1
-        ? `<div class="carousel-dots">
-             ${catImages.map((_, i) =>
-               `<span class="c-dot${i === 0 ? " active" : ""}" onclick="carouselGo('${carId}',${i})"></span>`
-             ).join("")}
-           </div>`
-        : "";
-
-      const arrows = catImages.length > 1
+      const arrows = itemImgs.length > 1
         ? `<button class="carousel-btn c-prev" onclick="carouselMove('${carId}',-1)" aria-label="prev">&#8249;</button>
            <button class="carousel-btn c-next" onclick="carouselMove('${carId}', 1)" aria-label="next">&#8250;</button>`
         : "";
-
+      const dots = itemImgs.length > 1
+        ? `<div class="carousel-dots">${itemImgs.map((_, i) =>
+            `<span class="c-dot${i === 0 ? " active" : ""}" onclick="carouselGo('${carId}',${i})"></span>`
+          ).join("")}</div>` : "";
       imgBlock = `<div class="card-img-wrap" style="background:${catBg}">
         <div class="carousel" id="${carId}">
-          ${slides}
-          ${arrows}
-          ${dots}
+          ${slides}${arrows}${dots}
           <div class="card-img-overlay"></div>
-          <span class="card-img-label">${catLabel}</span>
+          <span class="card-img-label" id="${carId}-lbl">${itemImgs[0].caption}</span>
         </div>
+      </div>`;
+    } else if (catFallback) {
+      // No admin images yet → Unsplash placeholder
+      imgBlock = `<div class="card-img-wrap" style="background:${catBg}">
+        <img class="card-img" src="${catFallback}" alt="${catAlt}" loading="lazy"
+             onerror="this.style.display='none'"/>
+        <div class="card-img-overlay"></div>
+        <span class="card-img-label">${catLabel}</span>
+      </div>`;
+    } else {
+      imgBlock = `<div class="card-img-wrap card-img-placeholder" style="background:${catBg}">
+        <span class="placeholder-icon">${catMeta.icon || "🏗️"}</span>
       </div>`;
     }
 
@@ -400,11 +405,21 @@ function carouselMove(id, dir) {
   cur = (cur + dir + slides.length) % slides.length;
   slides[cur].classList.add("active");
   dots[cur]?.classList.add("active");
+  _updateCarouselLabel(id, cur, slides);
 }
 
 function carouselGo(id, idx) {
   const el = document.getElementById(id);
   if (!el) return;
-  el.querySelectorAll(".carousel-slide").forEach((s, i) => s.classList.toggle("active", i === idx));
+  const slides = el.querySelectorAll(".carousel-slide");
+  slides.forEach((s, i) => s.classList.toggle("active", i === idx));
   el.querySelectorAll(".c-dot").forEach((d, i) => d.classList.toggle("active", i === idx));
+  _updateCarouselLabel(id, idx, slides);
+}
+
+function _updateCarouselLabel(id, idx, slides) {
+  const lbl = document.getElementById(id + "-lbl");
+  if (!lbl || !slides[idx]) return;
+  const img = slides[idx].querySelector("img");
+  if (img) lbl.textContent = img.alt;
 }

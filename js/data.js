@@ -11,36 +11,24 @@ const APP_DATA = {
     { id: "muzaffarpur", name: "मुजफ्फरपुर", nameEn: "Muzaffarpur", active: false },
   ],
 
+  // Images are now managed per-item via the Admin Portal (stored in browser localStorage).
+  // imageBg  = gradient shown when no image has been uploaded yet
+  // imageFallback = Unsplash photo shown as placeholder until admin uploads real photos
   categories: [
     {
       id: "bricks", icon: "🧱", name: "ईंट", nameEn: "Bricks",
-      // ✏️ Add your photos as bricks1.jpg, bricks2.jpg, bricks3.jpg … in images/materials/
-      images: [
-        "images/materials/bricks1.png",
-        "images/materials/bricks2.png",
-      ],
       imageFallback: "https://images.unsplash.com/photo-1587582345426-bf07f534a79c?auto=format&fit=crop&w=700&q=85",
       imageAlt: "Red clay construction bricks",
       imageBg: "linear-gradient(135deg,#c0392b22,#e67e2222)"
     },
     {
       id: "sand", icon: "⛱️", name: "बालू / रेत", nameEn: "Sand",
-      // ✏️ Add your photos as sand1.jpg, sand2.jpg, sand3.jpg … in images/materials/
-      images: [
-        "images/materials/sand1.png",
-        "images/materials/sand2.png",
-      ],
       imageFallback: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=700&q=85",
       imageAlt: "Construction sand",
       imageBg: "linear-gradient(135deg,#f39c1222,#f1c40f22)"
     },
     {
       id: "stonechips", icon: "🪨", name: "स्टोन चिप्स", nameEn: "Stone Chips",
-      // ✏️ Add your photos as stonechips1.jpg, stonechips2.jpg … in images/materials/
-      images: [
-        "images/materials/stonechips1.png",
-        "images/materials/stonechips2.png",
-      ],
       imageFallback: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=700&q=85",
       imageAlt: "Crushed stone chips aggregate",
       imageBg: "linear-gradient(135deg,#7f8c8d22,#2c3e5022)"

@@ -203,6 +203,44 @@ function showToast() {
   setTimeout(() => t.classList.remove("show"), 2500);
 }
 
+// ── IMAGE STORAGE HELPERS ─────────────────────────────────
+function imgKey(cat, supplierId, ii) {
+  return `nb_img_${cat}_${supplierId}_${ii}`;
+}
+function getStoredImg(cat, supplierId, ii) {
+  return localStorage.getItem(imgKey(cat, supplierId, ii)) || "";
+}
+
+// Compress + store image, then re-render
+function uploadItemImage(cat, si, ii, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const imgEl = new Image();
+    imgEl.onload = function() {
+      const canvas = document.createElement("canvas");
+      const MAX_W = 900, MAX_H = 600;
+      let w = imgEl.width, h = imgEl.height;
+      if (w > MAX_W) { h = Math.round(h * MAX_W / w); w = MAX_W; }
+      if (h > MAX_H) { w = Math.round(w * MAX_H / h); h = MAX_H; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(imgEl, 0, 0, w, h);
+      const compressed = canvas.toDataURL("image/jpeg", 0.78);
+      localStorage.setItem(imgKey(cat, APP_DATA.materials[cat][si].id, ii), compressed);
+      renderMaterialSection(cat);
+      showToast();
+    };
+    imgEl.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeItemImage(cat, si, ii) {
+  localStorage.removeItem(imgKey(cat, APP_DATA.materials[cat][si].id, ii));
+  renderMaterialSection(cat);
+}
+
 // ── MATERIAL SECTION ──────────────────────────────────────
 function renderMaterialSection(cat) {
   const container = document.getElementById(cat + "-list");
@@ -211,13 +249,26 @@ function renderMaterialSection(cat) {
   let html = "";
 
   suppliers.forEach((sup, si) => {
-    let priceRows = sup.items.map((item, ii) => `
-      <tr>
+    let priceRows = sup.items.map((item, ii) => {
+      const stored = getStoredImg(cat, sup.id, ii);
+      const imgCell = stored
+        ? `<div class="img-cell">
+             <img src="${stored}" class="item-img-thumb" alt="${item.grade}"/>
+             <button class="btn-remove-img" onclick="removeItemImage('${cat}',${si},${ii})" title="Remove photo">✕</button>
+           </div>`
+        : `<label class="btn-upload-img" title="Upload photo">
+             📷 <span>फोटो</span>
+             <input type="file" accept="image/*" style="display:none"
+               onchange="uploadItemImage('${cat}',${si},${ii},this)"/>
+           </label>`;
+      return `<tr>
         <td><input type="text" value="${item.grade}" oninput="updateField('${cat}',${si},'items',${ii},'grade',this.value)"/></td>
         <td><input type="number" value="${item.price}" oninput="updateField('${cat}',${si},'items',${ii},'price',this.value)"/></td>
         <td><input type="text" value="${item.unit}" oninput="updateField('${cat}',${si},'items',${ii},'unit',this.value)"/></td>
+        <td class="img-td">${imgCell}</td>
         <td><button class="btn-danger" onclick="removeItem('${cat}',${si},${ii})">✕</button></td>
-      </tr>`).join("");
+      </tr>`;
+    }).join("");
 
     html += `<div class="admin-card">
       <div class="admin-card-header">
@@ -234,10 +285,12 @@ function renderMaterialSection(cat) {
           <input type="text" value="${sup.whatsapp}" oninput="updateField('${cat}',${si},null,null,'whatsapp',this.value)"/>
         </div>
       </div>
-      <table class="price-table">
-        <thead><tr><th>Grade</th><th>Price (₹)</th><th>Unit</th><th></th></tr></thead>
-        <tbody id="items-${cat}-${si}">${priceRows}</tbody>
-      </table>
+      <div class="table-scroll">
+        <table class="price-table">
+          <thead><tr><th>Grade / Type</th><th>Price (₹)</th><th>Unit</th><th>Photo</th><th></th></tr></thead>
+          <tbody id="items-${cat}-${si}">${priceRows}</tbody>
+        </table>
+      </div>
       <button class="btn-add" onclick="addItem('${cat}',${si})">＋ Grade जोड़ें</button>
       <div class="card-actions">
         <button class="btn-danger" onclick="removeSupplier('${cat}',${si})">🗑 हटाएं</button>

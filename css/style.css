@@ -523,6 +523,14 @@ img { max-width: 100%; }
   z-index: 3;
 }
 
+/* Placeholder when no images uploaded yet */
+.card-img-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.placeholder-icon { font-size: 3.5rem; opacity: 0.35; }
+
 /* ── CARD BODY (content below image) ────────────────────────── */
 .card-body {
   padding: 20px 24px 24px;
