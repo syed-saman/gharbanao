@@ -12,9 +12,24 @@ const APP_DATA = {
   ],
 
   categories: [
-    { id: "bricks", icon: "🧱", name: "ईंट", nameEn: "Bricks" },
-    { id: "sand", icon: "⛱️", name: "बालू / रेत", nameEn: "Sand" },
-    { id: "stonechips", icon: "🪨", name: "स्टोन चिप्स", nameEn: "Stone Chips" },
+    {
+      id: "bricks", icon: "🧱", name: "ईंट", nameEn: "Bricks",
+      image: "https://images.unsplash.com/photo-1587582345426-bf07f534a79c?auto=format&fit=crop&w=700&q=85",
+      imageAlt: "Red clay construction bricks",
+      imageBg: "linear-gradient(135deg,#c0392b22,#e67e2222)"
+    },
+    {
+      id: "sand", icon: "⛱️", name: "बालू / रेत", nameEn: "Sand",
+      image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=700&q=85",
+      imageAlt: "Construction sand",
+      imageBg: "linear-gradient(135deg,#f39c1222,#f1c40f22)"
+    },
+    {
+      id: "stonechips", icon: "🪨", name: "स्टोन चिप्स", nameEn: "Stone Chips",
+      image: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=700&q=85",
+      imageAlt: "Crushed stone chips aggregate",
+      imageBg: "linear-gradient(135deg,#7f8c8d22,#2c3e5022)"
+    },
     { id: "services", icon: "👷", name: "सेवाएं", nameEn: "Services" },
   ],
 
