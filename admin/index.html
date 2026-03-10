@@ -562,16 +562,24 @@ function removeItem(cat, si, ii) {
 }
 
 function addSupplier(cat) {
+  const newId = cat + "_" + Date.now();
   APP_DATA.materials[cat].push({
-    id: cat + "_" + Date.now(),
+    id: newId,
     supplier: "नया सप्लायर",
     supplierEn: "New Supplier",
     rating: 4.0, reviews: 0,
     whatsapp: "91",
+    loginId: "",
+    loginPass: "",
     items: [{ grade: "ग्रेड 1", gradeEn: "Grade 1", price: 0, unit: "प्रति हजार", unitEn: "per 1000" }],
     badge: null, location: "patna"
   });
   renderMaterialSection(cat);
+  // Scroll to the new card
+  setTimeout(() => {
+    const list = document.getElementById(cat + "-list");
+    list?.lastElementChild?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 100);
 }
 
 function removeSupplier(cat, si) {
