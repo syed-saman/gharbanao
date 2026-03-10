@@ -128,12 +128,13 @@
 <div id="toast" class="toast">✅ सफलतापूर्वक सेव हुआ!</div>
 
 <!-- Load data from parent folder -->
+<script src="../js/config.js"></script>
 <script src="../js/translations.js"></script>
 <script src="../js/data.js"></script>
 
 <script>
-// ── AUTH ──────────────────────────────────────────────────
-const ADMIN_CREDS = { user: "admin", pass: "nirman2025" };
+// ── AUTH — credentials are set in js/config.js ────────────
+const ADMIN_CREDS = { user: SITE_CONFIG.adminUser, pass: SITE_CONFIG.adminPass };
 
 function doLogin() {
   const u = document.getElementById("adminUser").value;

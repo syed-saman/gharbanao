@@ -20,6 +20,28 @@ function renderAll() {
   renderReviews();
   applyTranslations();
   updateLangBtn();
+  updateWhatsappLinks();
+}
+
+// ─── WHATSAPP LINKS (driven by config.js) ────────────────────
+function updateWhatsappLinks() {
+  const num = SITE_CONFIG.businessWhatsapp;
+  const greeting = currentLang === "hi"
+    ? SITE_CONFIG.whatsappGreetingHi
+    : SITE_CONFIG.whatsappGreetingEn;
+
+  const heroBtn = document.getElementById("heroWaBtn");
+  if (heroBtn) heroBtn.href = `https://wa.me/${num}?text=${encodeURIComponent(greeting)}`;
+
+  const footerBtn = document.getElementById("footerWaBtn");
+  if (footerBtn) footerBtn.href = `https://wa.me/${num}`;
+
+  const footerNum = document.getElementById("footerWaNum");
+  if (footerNum) {
+    // Format: +91 XXXXX XXXXX
+    const digits = num.replace(/^\d{2}/, "");
+    footerNum.textContent = `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`;
+  }
 }
 
 // ─── LANGUAGE ────────────────────────────────────────────────
