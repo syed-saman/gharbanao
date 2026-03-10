@@ -8,7 +8,7 @@ const SITE_CONFIG = {
 
   // ── BUSINESS CONTACT ─────────────────────────────────────
   // WhatsApp number with country code, no + or spaces
-  businessWhatsapp: "919876543210",
+  businessWhatsapp: "919980923575",
 
   // ── BUSINESS INFO ─────────────────────────────────────────
   businessName:   "निर्माण बाजार",
