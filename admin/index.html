@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — निर्माण बाजार</title>
+  <link rel="stylesheet" href="admin.css"/>
+</head>
+<body>
+
+<!-- ══════════ LOGIN SCREEN ══════════ -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-box">
+    <div class="logo-big">🏗️</div>
+    <h2>निर्माण बाजार</h2>
+    <p>Admin Portal — सिर्फ अधिकृत उपयोगकर्ता</p>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="adminUser" placeholder="admin" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="adminPass" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="btn-login" onclick="doLogin()">Login →</button>
+    <p class="login-error" id="loginError"></p>
+    <br/><a href="../index.html" style="font-size:0.8rem;color:#78716C">← वेबसाइट पर जाएं</a>
+  </div>
+</div>
+
+<!-- ══════════ ADMIN PORTAL ══════════ -->
+<div id="adminPortal" class="admin-layout" style="display:none;">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="icon">🏗️</span>
+      <div>
+        <div>निर्माण बाजार</div>
+        <div style="font-size:0.7rem;opacity:0.5;font-weight:400;">Admin Portal</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Dashboard</div>
+      <a class="active" onclick="showSection('overview')">📊 Overview</a>
+      <div class="nav-section">सामग्री</div>
+      <a onclick="showSection('bricks')">🧱 ईंट (Bricks)</a>
+      <a onclick="showSection('sand')">⛱️ बालू (Sand)</a>
+      <a onclick="showSection('stonechips')">🪨 स्टोन चिप्स</a>
+      <div class="nav-section">अन्य</div>
+      <a onclick="showSection('services')">👷 सेवाएं</a>
+      <a href="../index.html">🌐 वेबसाइट देखें</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="doLogout()">🚪 Logout</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="admin-main">
+
+    <!-- OVERVIEW -->
+    <div id="sec-overview" class="admin-section active">
+      <div class="admin-header">
+        <div>
+          <h1>📊 Dashboard Overview</h1>
+          <p>निर्माण बाजार — Admin Panel</p>
+        </div>
+        <a href="../index.html" class="back-link">🌐 वेबसाइट देखें →</a>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="s-icon">🧱</div><div class="s-num" id="ov-bricks">3</div><div class="s-label">Brick Suppliers</div></div>
+        <div class="stat-card"><div class="s-icon">⛱️</div><div class="s-num" id="ov-sand">2</div><div class="s-label">Sand Suppliers</div></div>
+        <div class="stat-card"><div class="s-icon">🪨</div><div class="s-num" id="ov-stone">2</div><div class="s-label">Stone Suppliers</div></div>
+        <div class="stat-card"><div class="s-icon">👷</div><div class="s-num" id="ov-services">6</div><div class="s-label">Services Listed</div></div>
+      </div>
+      <div class="admin-card">
+        <div class="admin-card-header"><h3>💡 Quick Guide</h3></div>
+        <ul style="padding-left:20px;line-height:2;font-size:0.88rem;color:#78716C">
+          <li>Left sidebar से category चुनें</li>
+          <li>किसी भी supplier का रेट सीधे update करें</li>
+          <li>नया supplier जोड़ने के लिए "नया जोड़ें" बटन दबाएं</li>
+          <li>Changes तुरंत live हो जाते हैं (browser storage में)</li>
+          <li>WhatsApp number बदलने के लिए supplier card में edit करें</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- BRICKS -->
+    <div id="sec-bricks" class="admin-section">
+      <div class="admin-header">
+        <div><h1>🧱 ईंट — Bricks Management</h1><p>सभी भट्ठों के रेट अपडेट करें</p></div>
+      </div>
+      <div id="bricks-list"></div>
+      <button class="btn-add" onclick="addSupplier('bricks')">＋ नया भट्ठा जोड़ें</button>
+    </div>
+
+    <!-- SAND -->
+    <div id="sec-sand" class="admin-section">
+      <div class="admin-header">
+        <div><h1>⛱️ बालू — Sand Management</h1><p>सभी बालू सप्लायर के रेट अपडेट करें</p></div>
+      </div>
+      <div id="sand-list"></div>
+      <button class="btn-add" onclick="addSupplier('sand')">＋ नया सप्लायर जोड़ें</button>
+    </div>
+
+    <!-- STONECHIPS -->
+    <div id="sec-stonechips" class="admin-section">
+      <div class="admin-header">
+        <div><h1>🪨 स्टोन चिप्स Management</h1><p>सभी स्टोन सप्लायर के रेट अपडेट करें</p></div>
+      </div>
+      <div id="stonechips-list"></div>
+      <button class="btn-add" onclick="addSupplier('stonechips')">＋ नया सप्लायर जोड़ें</button>
+    </div>
+
+    <!-- SERVICES -->
+    <div id="sec-services" class="admin-section">
+      <div class="admin-header">
+        <div><h1>👷 सेवाएं Management</h1><p>सेवाएं और contacts अपडेट करें</p></div>
+      </div>
+      <div id="services-list"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast">✅ सफलतापूर्वक सेव हुआ!</div>
+
+<!-- Load data from parent folder -->
+<script src="../js/translations.js"></script>
+<script src="../js/data.js"></script>
+
+<script>
+// ── AUTH ──────────────────────────────────────────────────
+const ADMIN_CREDS = { user: "admin", pass: "nirman2025" };
+
+function doLogin() {
+  const u = document.getElementById("adminUser").value;
+  const p = document.getElementById("adminPass").value;
+  if (u === ADMIN_CREDS.user && p === ADMIN_CREDS.pass) {
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("adminPortal").style.display = "flex";
+    loadAdminData();
+    renderAllSections();
+  } else {
+    document.getElementById("loginError").textContent = "❌ गलत username या password";
+  }
+}
+
+function doLogout() {
+  document.getElementById("loginScreen").style.display = "flex";
+  document.getElementById("adminPortal").style.display = "none";
+}
+
+// ── NAVIGATION ────────────────────────────────────────────
+function showSection(id) {
+  document.querySelectorAll(".admin-section").forEach(s => s.classList.remove("active"));
+  document.querySelectorAll(".sidebar-nav a").forEach(a => a.classList.remove("active"));
+  document.getElementById("sec-" + id).classList.add("active");
+  event.currentTarget.classList.add("active");
+  renderSection(id);
+}
+
+function renderAllSections() {
+  renderMaterialSection("bricks");
+  renderMaterialSection("sand");
+  renderMaterialSection("stonechips");
+  renderServicesSection();
+  updateOverview();
+}
+
+function renderSection(id) {
+  if (["bricks","sand","stonechips"].includes(id)) renderMaterialSection(id);
+  else if (id === "services") renderServicesSection();
+}
+
+// ── LOAD / SAVE DATA ──────────────────────────────────────
+function loadAdminData() {
+  const saved = localStorage.getItem("nb_admin_data");
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      APP_DATA.materials = parsed.materials || APP_DATA.materials;
+      APP_DATA.services = parsed.services || APP_DATA.services;
+    } catch(e) {}
+  }
+}
+
+function saveAdminData() {
+  localStorage.setItem("nb_admin_data", JSON.stringify({
+    materials: APP_DATA.materials,
+    services: APP_DATA.services,
+    lastUpdated: new Date().toLocaleDateString("hi-IN")
+  }));
+  showToast();
+}
+
+function showToast() {
+  const t = document.getElementById("toast");
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+// ── MATERIAL SECTION ──────────────────────────────────────
+function renderMaterialSection(cat) {
+  const container = document.getElementById(cat + "-list");
+  if (!container) return;
+  const suppliers = APP_DATA.materials[cat] || [];
+  let html = "";
+
+  suppliers.forEach((sup, si) => {
+    let priceRows = sup.items.map((item, ii) => `
+      <tr>
+        <td><input type="text" value="${item.grade}" oninput="updateField('${cat}',${si},'items',${ii},'grade',this.value)"/></td>
+        <td><input type="number" value="${item.price}" oninput="updateField('${cat}',${si},'items',${ii},'price',this.value)"/></td>
+        <td><input type="text" value="${item.unit}" oninput="updateField('${cat}',${si},'items',${ii},'unit',this.value)"/></td>
+        <td><button class="btn-danger" onclick="removeItem('${cat}',${si},${ii})">✕</button></td>
+      </tr>`).join("");
+
+    html += `<div class="admin-card">
+      <div class="admin-card-header">
+        <h3>${sup.supplier}</h3>
+        <span class="supplier-badge">${sup.location}</span>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Supplier Name (Hindi)</label>
+          <input type="text" value="${sup.supplier}" oninput="updateField('${cat}',${si},null,null,'supplier',this.value)"/>
+        </div>
+        <div class="form-field">
+          <label>WhatsApp Number</label>
+          <input type="text" value="${sup.whatsapp}" oninput="updateField('${cat}',${si},null,null,'whatsapp',this.value)"/>
+        </div>
+      </div>
+      <table class="price-table">
+        <thead><tr><th>Grade</th><th>Price (₹)</th><th>Unit</th><th></th></tr></thead>
+        <tbody id="items-${cat}-${si}">${priceRows}</tbody>
+      </table>
+      <button class="btn-add" onclick="addItem('${cat}',${si})">＋ Grade जोड़ें</button>
+      <div class="card-actions">
+        <button class="btn-danger" onclick="removeSupplier('${cat}',${si})">🗑 हटाएं</button>
+        <button class="btn-save" onclick="saveAdminData()">💾 Save</button>
+      </div>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+// ── SERVICES SECTION ──────────────────────────────────────
+function renderServicesSection() {
+  const container = document.getElementById("services-list");
+  if (!container) return;
+  let html = "";
+  APP_DATA.services.forEach((svc, si) => {
+    html += `<div class="admin-card">
+      <div class="admin-card-header">
+        <h3>${svc.icon} ${svc.name}</h3>
+        <span class="supplier-badge">${svc.type}</span>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Name (Hindi)</label>
+          <input type="text" value="${svc.name}" oninput="updateService(${si},'name',this.value)"/>
+        </div>
+        <div class="form-field">
+          <label>WhatsApp Number</label>
+          <input type="text" value="${svc.whatsapp}" oninput="updateService(${si},'whatsapp',this.value)"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Description</label>
+          <input type="text" value="${svc.description}" oninput="updateService(${si},'description',this.value)"/>
+        </div>
+        <div class="form-field">
+          <label>Providers Available</label>
+          <input type="number" value="${svc.providers}" oninput="updateService(${si},'providers',parseInt(this.value))"/>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="btn-save" onclick="saveAdminData()">💾 Save</button>
+      </div>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+// ── DATA MUTATIONS ────────────────────────────────────────
+function updateField(cat, si, sub, ii, key, val) {
+  if (sub === "items") {
+    APP_DATA.materials[cat][si].items[ii][key] = key === "price" ? parseInt(val) || 0 : val;
+  } else {
+    APP_DATA.materials[cat][si][key] = val;
+  }
+}
+
+function updateService(si, key, val) {
+  APP_DATA.services[si][key] = val;
+}
+
+function addItem(cat, si) {
+  APP_DATA.materials[cat][si].items.push({ grade: "नया ग्रेड", gradeEn: "New Grade", price: 0, unit: "प्रति हजार", unitEn: "per 1000" });
+  renderMaterialSection(cat);
+}
+
+function removeItem(cat, si, ii) {
+  APP_DATA.materials[cat][si].items.splice(ii, 1);
+  renderMaterialSection(cat);
+}
+
+function addSupplier(cat) {
+  APP_DATA.materials[cat].push({
+    id: cat + "_" + Date.now(),
+    supplier: "नया सप्लायर",
+    supplierEn: "New Supplier",
+    rating: 4.0, reviews: 0,
+    whatsapp: "91",
+    items: [{ grade: "ग्रेड 1", gradeEn: "Grade 1", price: 0, unit: "प्रति हजार", unitEn: "per 1000" }],
+    badge: null, location: "patna"
+  });
+  renderMaterialSection(cat);
+}
+
+function removeSupplier(cat, si) {
+  if (confirm("क्या आप इस supplier को हटाना चाहते हैं?")) {
+    APP_DATA.materials[cat].splice(si, 1);
+    renderMaterialSection(cat);
+  }
+}
+
+function updateOverview() {
+  document.getElementById("ov-bricks").textContent = APP_DATA.materials.bricks?.length || 0;
+  document.getElementById("ov-sand").textContent = APP_DATA.materials.sand?.length || 0;
+  document.getElementById("ov-stone").textContent = APP_DATA.materials.stonechips?.length || 0;
+  document.getElementById("ov-services").textContent = APP_DATA.services?.length || 0;
+}
+</script>
+</body>
+</html>
